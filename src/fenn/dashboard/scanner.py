@@ -1,6 +1,7 @@
 """FnXML file discovery and parsing for the Fenn dashboard."""
 
 import os
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree as ET
@@ -11,6 +12,22 @@ _DEFAULT_DIRS = [
     "~/logger",
     "~/.fenn/logs",
 ]
+
+# A session whose .fn file is missing the closing tag and has not been touched
+# for this many seconds is treated as crashed rather than still running.
+_DEFAULT_RUNNING_TIMEOUT_S = 300
+
+
+def _running_timeout_s() -> float:
+    """Read the running-session timeout from FENN_RUNNING_TIMEOUT_S, with fallback."""
+    raw = os.environ.get("FENN_RUNNING_TIMEOUT_S")
+    if not raw:
+        return float(_DEFAULT_RUNNING_TIMEOUT_S)
+    try:
+        v = float(raw)
+        return v if v > 0 else float(_DEFAULT_RUNNING_TIMEOUT_S)
+    except ValueError:
+        return float(_DEFAULT_RUNNING_TIMEOUT_S)
 
 
 class FennScanner:
@@ -128,6 +145,13 @@ class FennScanner:
             file_size = 0
             file_mtime = 0.0
 
+        # A "running" session whose file has been idle past the timeout is
+        # almost certainly a crashed process — surface that distinctly so the
+        # running counter does not drift over time.
+        if status == "running" and file_mtime > 0:
+            if time.time() - file_mtime > _running_timeout_s():
+                status = "crashed"
+
         return {
             "session_id": root.get("session_id", path.stem),
             "project": root.get("project", path.parent.name),
@@ -167,6 +191,7 @@ class FennScanner:
                     "name": name,
                     "session_count": 0,
                     "running_count": 0,
+                    "crashed_count": 0,
                     "warning_count": 0,
                     "exception_count": 0,
                     "last_active": s["started"],
@@ -177,6 +202,8 @@ class FennScanner:
             p["exception_count"] += s["exception_count"]
             if s["status"] == "running":
                 p["running_count"] += 1
+            elif s["status"] == "crashed":
+                p["crashed_count"] += 1
 
         project_list = sorted(
             projects.values(), key=lambda p: p["last_active"], reverse=True
@@ -185,6 +212,7 @@ class FennScanner:
         total_warnings = sum(s["warning_count"] for s in sessions)
         total_exceptions = sum(s["exception_count"] for s in sessions)
         running = sum(1 for s in sessions if s["status"] == "running")
+        crashed = sum(1 for s in sessions if s["status"] == "crashed")
 
         return {
             "projects": project_list,
@@ -194,6 +222,7 @@ class FennScanner:
             "total_warnings": total_warnings,
             "total_exceptions": total_exceptions,
             "running_sessions": running,
+            "crashed_sessions": crashed,
             "active_page": "home",
         }
 
@@ -210,6 +239,7 @@ class FennScanner:
             "sessions": sessions,
             "total_sessions": len(sessions),
             "running_sessions": sum(1 for s in sessions if s["status"] == "running"),
+            "crashed_sessions": sum(1 for s in sessions if s["status"] == "crashed"),
             "total_warnings": sum(s["warning_count"] for s in sessions),
             "total_exceptions": sum(s["exception_count"] for s in sessions),
             "active_page": "project",
