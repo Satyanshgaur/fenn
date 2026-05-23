@@ -84,10 +84,13 @@ class RemoteClient:
         script: str,
         max_runtime: int,
         project: Optional[str] = None,
+        venv: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        meta = {"max_runtime": max_runtime, "script": script}
+        meta: Dict[str, Any] = {"max_runtime": max_runtime, "script": script}
         if project:
             meta["project"] = project
+        if venv:
+            meta["venv"] = venv
 
         with open(tarball_path, "rb") as fh:
             files = {

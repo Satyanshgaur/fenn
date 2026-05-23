@@ -117,7 +117,7 @@ def _run_remote(
     from fenn.remote.artifacts import extract_artifacts
     from fenn.remote.client import RemoteClient
     from fenn.remote.credentials import resolve_api_key
-    from fenn.remote.workspace import pack_workspace
+    from fenn.remote.workspace import detect_venv_spec, pack_workspace
 
     creds = resolve_api_key(explicit=explicit_key, profile=profile)
     effective_host = host or creds.host
@@ -141,6 +141,15 @@ def _run_remote(
         extra_excludes=excludes,
     )
 
+    venv_spec = detect_venv_spec(root)
+    if venv_spec:
+        print(
+            f"{Fore.CYAN}Found {Fore.LIGHTYELLOW_EX}{venv_spec['requirements']}"
+            f"{Fore.CYAN} — remote will build a temporary venv and install "
+            f"dependencies before running.{Style.RESET_ALL}",
+            file=sys.stderr,
+        )
+
     try:
         with RemoteClient(effective_host, creds.api_key) as client:
             print(
@@ -154,6 +163,7 @@ def _run_remote(
                 script=pack.script_relpath,
                 max_runtime=max_runtime,
                 project=project,
+                venv=venv_spec,
             )
             job_id = submission["job_id"]
             hold = submission.get("credit_hold")

@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from fenn.remote.exceptions import WorkspaceTooLargeError
-from fenn.remote.workspace import pack_workspace
+from fenn.remote.workspace import detect_venv_spec, pack_workspace
 
 
 @pytest.fixture
@@ -86,3 +86,13 @@ def test_extra_excludes(project):
         assert "data/x.csv" not in names
     finally:
         pack.cleanup()
+
+
+def test_detect_venv_spec_returns_none_without_requirements(project):
+    assert detect_venv_spec(project) is None
+
+
+def test_detect_venv_spec_picks_up_requirements_txt(project):
+    (project / "requirements.txt").write_text("numpy==2.0.0\n")
+    spec = detect_venv_spec(project)
+    assert spec == {"enabled": True, "requirements": "requirements.txt"}

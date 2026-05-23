@@ -26,6 +26,8 @@ from typing import Iterable, List, Optional, Sequence
 
 from fenn.remote.exceptions import WorkspaceTooLargeError
 
+REQUIREMENTS_FILENAME = "requirements.txt"
+
 DEFAULT_EXCLUDES: tuple[str, ...] = (
     "logger",
     "export",
@@ -62,6 +64,20 @@ class WorkspacePack:
             self.path.unlink()
         except FileNotFoundError:
             pass
+
+
+def detect_venv_spec(root: Path) -> Optional[dict]:
+    """Return a venv setup spec for the server if ``root`` ships dependencies.
+
+    Currently looks only for a top-level ``requirements.txt``. The returned
+    dict is the payload the CLI passes through to the server under
+    ``meta['venv']`` so the remote can build an isolated venv and install
+    deps before launching the entrypoint.
+    """
+    req = root / REQUIREMENTS_FILENAME
+    if req.is_file():
+        return {"enabled": True, "requirements": REQUIREMENTS_FILENAME}
+    return None
 
 
 def _load_fennignore(root: Path) -> List[str]:
