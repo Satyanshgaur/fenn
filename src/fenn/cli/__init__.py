@@ -84,8 +84,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument(
         "--max-runtime",
         type=int,
-        default=3600,
-        help="Maximum allowed wall-time in seconds (server enforces; default: 3600)",
+        default=300,
+        help="Maximum allowed wall-time in seconds (server enforces; default: 300)",
     )
     p_run.add_argument(
         "--detach",

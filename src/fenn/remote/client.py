@@ -14,19 +14,38 @@ this module directly. The transport surface is:
 from __future__ import annotations
 
 import json
+import ssl
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional
 
+import certifi
 import requests
+from requests.adapters import HTTPAdapter
 
 from fenn.remote.exceptions import (
     InsufficientCreditsError,
     RemoteError,
 )
 
-DEFAULT_REMOTE_HOST = "http://pyfenn.com:9090"
+DEFAULT_REMOTE_HOST = "https://pyfenn.com"
 DEFAULT_TIMEOUT = (10.0, 60.0)  # (connect, read) seconds for non-streaming calls
+
+
+class _CertifiSSLAdapter(HTTPAdapter):
+    """Force urllib3 to use certifi's CA bundle, bypassing OS/truststore injection."""
+
+    def __init__(self, *args, **kwargs) -> None:
+        self._ssl_context = ssl.create_default_context(cafile=certifi.where())
+        super().__init__(*args, **kwargs)
+
+    def init_poolmanager(self, *args, **kwargs) -> None:
+        kwargs["ssl_context"] = self._ssl_context
+        return super().init_poolmanager(*args, **kwargs)
+
+    def proxy_manager_for(self, proxy, **proxy_kwargs):
+        proxy_kwargs["ssl_context"] = self._ssl_context
+        return super().proxy_manager_for(proxy, **proxy_kwargs)
 
 
 class RemoteClient:
@@ -38,6 +57,8 @@ class RemoteClient:
         self.host = host.rstrip("/")
         self.api_key = api_key
         self._session = session or requests.Session()
+        if session is None:
+            self._session.mount("https://", _CertifiSSLAdapter())
         self._session.headers.update(
             {
                 "Authorization": f"Bearer {api_key}",

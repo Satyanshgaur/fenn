@@ -16,6 +16,8 @@ from fenn.remote.credentials import (
     mask_key,
     write_credentials,
 )
+import requests
+
 from fenn.remote.exceptions import RemoteError
 
 
@@ -48,6 +50,15 @@ def _login(args: argparse.Namespace) -> None:
 
     api_key = args.api_key
     if not api_key:
+        existing = load_credentials(profile)
+        if existing is not None:
+            print(
+                f"{Fore.GREEN}Already logged in (profile: {profile}, "
+                f"key: {mask_key(existing.api_key)}). "
+                f"Run {Fore.LIGHTYELLOW_EX}fenn auth logout{Fore.GREEN} first to switch keys.{Style.RESET_ALL}"
+            )
+            return
+
         if sys.stdin.isatty():
             api_key = getpass.getpass(
                 f"Paste Fenn API key for profile [{profile}]: "
@@ -100,7 +111,13 @@ def _status(args: argparse.Namespace) -> None:
             f"{Fore.GREEN}credits : {Fore.LIGHTYELLOW_EX}{credits_remaining}"
             f"{Fore.GREEN}  plan: {plan}{Style.RESET_ALL}"
         )
-    except RemoteError as exc:
+    except requests.exceptions.SSLError:
+        print(
+            f"{Fore.RED}SSL verification failed for {DEFAULT_REMOTE_HOST}. "
+            f"Try: pip install --upgrade certifi{Style.RESET_ALL}",
+            file=sys.stderr,
+        )
+    except (RemoteError, requests.exceptions.ConnectionError) as exc:
         print(
             f"{Fore.RED}Could not reach host: {exc}{Style.RESET_ALL}",
             file=sys.stderr,
