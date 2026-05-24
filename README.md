@@ -225,6 +225,24 @@ A quick reference for all available fenn CLI commands.
 | `fenn pull <template>` | Pull a template into the current directory |
 | `fenn pull <template> <path>` | Pull a template into the specified path (created if missing) |
 | `fenn pull <template> --force` | Pull a template and overwrite existing files |
+| `fenn run [script]` | Execute on the Fenn remote service; uploads the project, streams logs, downloads artifacts |
+| `fenn auth login` | Save an API key under a credentials profile |
+| `fenn auth status` | Show the current profile and credit balance |
+| `fenn auth logout` | Remove a profile from the credentials file |
+| `fenn dashboard` | Launch the local log-browser web UI |
+
+## Remote execution
+
+`fenn run` ships the project to the fixed Fenn remote service, streams logs back, and downloads the resulting
+`logger/` and `export/` directories.
+
+```bash
+fenn auth login    # one-time setup
+fenn run main.py   # execute remotely
+```
+
+The remote service runs each job in an isolated subprocess workdir and bills
+credits proportional to wall time.
 
 ## Cite fenn
 
@@ -261,7 +279,6 @@ The development and long-term direction of **fenn** is guided by the following m
 |------------|------|
 | [@blkdmr](https://github.com/blkdmr) | Creator & Project Administrator |
 | [@giuliaOddi](https://github.com/giuliaOddi) | Project Administrator |
-| [@franciscolima05](https://github.com/franciscolima05) | Core Maintainer |
 
 Maintainers oversee the project roadmap, review pull requests, coordinate releases, and ensure the long-term stability and quality of the framework.
 
