@@ -216,9 +216,7 @@ class FennScanner:
         }
 
     @staticmethod
-    def _refresh_running_status(
-        parsed: Dict[str, Any], mtime: float
-    ) -> Dict[str, Any]:
+    def _refresh_running_status(parsed: Dict[str, Any], mtime: float) -> Dict[str, Any]:
         """Re-evaluate stale "running" sessions against the current timeout.
 
         Cached results are reused across requests, but the running→crashed
@@ -239,11 +237,9 @@ class FennScanner:
                 sessions.append(parsed)
         return sessions
 
-    def get_overview(self) -> Dict[str, Any]:
-        """Aggregate stats for the dashboard home page."""
-        sessions = self.get_all_sessions()
-
-        # Group by project
+    @staticmethod
+    def _build_projects_list(sessions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Aggregate per-project stats from an already-loaded sessions list."""
         projects: Dict[str, Dict[str, Any]] = {}
         for s in sessions:
             name = s["project"]
@@ -265,25 +261,22 @@ class FennScanner:
                 p["running_count"] += 1
             elif s["status"] == "crashed":
                 p["crashed_count"] += 1
+        return sorted(projects.values(), key=lambda p: p["last_active"], reverse=True)
 
-        project_list = sorted(
-            projects.values(), key=lambda p: p["last_active"], reverse=True
-        )
-
-        total_warnings = sum(s["warning_count"] for s in sessions)
-        total_exceptions = sum(s["exception_count"] for s in sessions)
-        running = sum(1 for s in sessions if s["status"] == "running")
-        crashed = sum(1 for s in sessions if s["status"] == "crashed")
+    def get_overview(self) -> Dict[str, Any]:
+        """Aggregate stats for the dashboard home page."""
+        sessions = self.get_all_sessions()
+        project_list = self._build_projects_list(sessions)
 
         return {
             "projects": project_list,
             "recent_sessions": sessions[:20],
             "total_sessions": len(sessions),
-            "total_projects": len(projects),
-            "total_warnings": total_warnings,
-            "total_exceptions": total_exceptions,
-            "running_sessions": running,
-            "crashed_sessions": crashed,
+            "total_projects": len(project_list),
+            "total_warnings": sum(s["warning_count"] for s in sessions),
+            "total_exceptions": sum(s["exception_count"] for s in sessions),
+            "running_sessions": sum(1 for s in sessions if s["status"] == "running"),
+            "crashed_sessions": sum(1 for s in sessions if s["status"] == "crashed"),
             "active_page": "home",
         }
 
@@ -292,10 +285,8 @@ class FennScanner:
         all_sessions = self.get_all_sessions()
         sessions = [s for s in all_sessions if s["project"] == project_name]
 
-        overview = self.get_overview()
-
         return {
-            "projects": overview["projects"],
+            "projects": self._build_projects_list(all_sessions),
             "project_name": project_name,
             "sessions": sessions,
             "total_sessions": len(sessions),
@@ -356,16 +347,12 @@ class FennScanner:
         responsible for converting these into HTTP-shaped errors.
         """
         if status is not None and status not in _VALID_STATUSES:
-            raise ValueError(
-                f"status must be one of {list(_VALID_STATUSES)}"
-            )
+            raise ValueError(f"status must be one of {list(_VALID_STATUSES)}")
 
         descending = sort.startswith("-")
         field = sort[1:] if descending else sort
         if field not in _VALID_SORT_FIELDS:
-            raise ValueError(
-                f"sort field must be one of {list(_VALID_SORT_FIELDS)}"
-            )
+            raise ValueError(f"sort field must be one of {list(_VALID_SORT_FIELDS)}")
 
         sessions = self.get_all_sessions()
         if project:

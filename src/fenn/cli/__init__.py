@@ -5,6 +5,7 @@ import fenn.cli.dashboard as dashboard
 import fenn.cli.list as list
 import fenn.cli.pull as pull
 import fenn.cli.run as run
+import fenn.cli.grid as grid
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -117,9 +118,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     auth_subparsers = p_auth.add_subparsers(dest="auth_command", required=True)
 
-    p_login = auth_subparsers.add_parser(
-        "login", help="Save an API key for a profile"
-    )
+    p_login = auth_subparsers.add_parser("login", help="Save an API key for a profile")
     p_login.add_argument(
         "--profile", default=None, help="Profile name (default: 'default')"
     )
@@ -145,6 +144,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--profile", default=None, help="Profile name (default: 'default')"
     )
     p_logout.set_defaults(func=auth.execute)
+    
+    # ========= GRID =========
+    
+    p_grid = subparsers.add_parser(
+        "grid",
+        help="Run a Fenn project several times, with all possible grid hyperparams",
+    )
+
+    p_grid.add_argument(
+        "path",
+        nargs="?",
+        help="Target directory (default: current directory)",
+    )
+
+    p_grid.set_defaults(func=grid.execute)
 
     return parser
 
