@@ -1,6 +1,7 @@
+import os
+
 import pytest
 import requests
-import os
 
 from fenn.notification.services.discord import Discord
 
@@ -39,7 +40,9 @@ class TestDiscord:
 
         with pytest.raises(KeyError):
             print(os.environ["DISCORD_WEBHOOK_URL"])
-            Discord(os.environ["DISCORD_WEBHOOK_URL"],)
+            Discord(
+                os.environ["DISCORD_WEBHOOK_URL"],
+            )
 
     def test_send_notification_success(self, send_message_to_discord, message):
         request = send_message_to_discord(

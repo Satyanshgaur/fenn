@@ -3,7 +3,6 @@ import warnings
 from fenn.agents import BaseNode, Flow, Node
 
 
-
 class _Counter(Node):
     """Node that increments shared['count'] and returns next_action."""
 
