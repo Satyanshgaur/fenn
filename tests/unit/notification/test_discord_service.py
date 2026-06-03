@@ -39,7 +39,6 @@ class TestDiscord:
         monkeypatch.delenv("DISCORD_WEBHOOK_URL", raising=False)
 
         with pytest.raises(KeyError):
-            print(os.environ["DISCORD_WEBHOOK_URL"])
             Discord(
                 os.environ["DISCORD_WEBHOOK_URL"],
             )
