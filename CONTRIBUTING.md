@@ -56,6 +56,7 @@ This only needs to be done once after cloning your fork.
 This makes pre-commit run the configured hooks on every `git commit`. Your commit may be blocked if a hook reports a failure or modifies a file. `ruff format` may reformat your code automatically, so you'll need to review the modifications and stage them again before committing. Without this step your commits may fail CI.
 
 For more information on `ruff` and `typos` see the docs:
+
 - [`ruff` documentation](https://docs.astral.sh/ruff/)
 - [`typos` documentation](https://github.com/crate-ci/typos)
 
@@ -82,3 +83,53 @@ If you find a bug or have a feature request but do not plan to implement it your
 
 If you need guidance at any point, use the Discord server or the GitHub discussion thread to ask questions and coordinate with maintainers and other contributors.
 
+## Building the Documentation
+
+Fenn has two documentation sites:
+
+- **[pyfenn.org](https://pyfenn.org)** — User-facing docs built with [MkDocs](https://www.mkdocs.org/), lives in [pyfenn/docs](https://github.com/pyfenn/docs)
+- **[api.pyfenn.org](https://api.pyfenn.org)** — Developer API reference built with [Sphinx](https://www.sphinx-doc.org/), lives in [pyfenn/dev-docs](https://github.com/pyfenn/dev-docs)
+
+### User Docs (MkDocs)
+
+Install dependencies:
+
+```bash
+pip install mkdocs-material
+```
+
+Clone and serve locally:
+
+```bash
+git clone https://github.com/pyfenn/docs.git
+cd docs
+mkdocs serve
+```
+
+Open `http://127.0.0.1:8000` in your browser to preview.
+
+If your change affects user-facing features, update the relevant `.md` files in `docs/src/` and open a PR to [pyfenn/docs](https://github.com/pyfenn/docs).
+
+### Developer API Reference (Sphinx)
+
+Install dependencies:
+
+```bash
+pip install sphinx furo sphinx-copybutton sphinx-design myst-parser
+```
+
+Clone and build locally:
+
+```bash
+git clone https://github.com/pyfenn/dev-docs.git
+cd dev-docs
+make html
+```
+
+Open `_build/html/index.html` in your browser to preview.
+
+The API reference at [api.pyfenn.org](https://api.pyfenn.org) is automatically updated when changes are merged into the main fenn repository. If your change adds or modifies public APIs, make sure your docstrings are up to date — the API reference is generated directly from them.
+
+### Contributing to the Docs
+
+If your change affects public APIs or adds new features, please update the relevant `.rst` files in the docs repository and open a separate PR there.
