@@ -78,6 +78,7 @@ test = [
   "flask~=3.0.2",
   "flask-wtf>=1.2.0",
   { include-group = "vision" },
+  { include-group = "ci" },
 ]
 
 pre-commit = [
