@@ -1,7 +1,7 @@
-import logging
 from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, TypedDict
+from fenn.utils.logging import logger
 
 try:
     from PIL import Image
@@ -11,8 +11,6 @@ except ImportError:
     PIL_AVAILABLE = False
 
 from .vision_utils import normalize_color_mode
-
-logger = logging.getLogger(__name__)
 
 
 class ImageDirSummary(TypedDict):

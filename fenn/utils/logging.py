@@ -156,7 +156,7 @@ class FnXmlBackend:
         return dict(items)
 
 
-logger = logging.getLogger("myapp")
+logger = logging.getLogger("__name__")
 logger.setLevel(logging.DEBUG)
 
 console = logging.StreamHandler()

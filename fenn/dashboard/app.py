@@ -1,7 +1,6 @@
 """Fenn Dashboard — Flask application for browsing fnxml log files."""
 
 import argparse
-import logging
 import secrets
 from datetime import timedelta
 from pathlib import Path
@@ -340,8 +339,6 @@ def run(
     """Configure and start the dashboard server."""
     if log_dirs:
         scanner.add_dirs(log_dirs)
-    logging.getLogger("werkzeug").setLevel(logging.ERROR)
-    app.logger.setLevel(logging.ERROR)
     logger.info(f"Fenn dashboard started at http://{host}:{port}")
     from werkzeug.serving import make_server
 
