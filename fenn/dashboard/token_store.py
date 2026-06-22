@@ -14,15 +14,14 @@ gcloud, gh, etc.).
 from __future__ import annotations
 
 import json
-import logging
 import os
 import stat
 from pathlib import Path
 from typing import Optional, TypedDict
 
-_PATH = Path.home() / ".fenn" / "dashboard_session.json"
+from fenn.utils.logging import logger
 
-logger = logging.getLogger(__name__)
+_PATH = Path.home() / ".fenn" / "dashboard_session.json"
 
 
 class StoredSession(TypedDict):

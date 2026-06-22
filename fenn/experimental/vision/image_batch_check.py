@@ -1,11 +1,9 @@
-import logging
 from typing import Any, Dict, List, Literal, TypedDict
+from fenn.utils.logging import logger
 
 import numpy as np
 
 from .vision_utils import detect_format
-
-logger = logging.getLogger(__name__)
 
 
 class BatchIssue(TypedDict):

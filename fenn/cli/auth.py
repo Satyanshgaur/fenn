@@ -18,15 +18,15 @@ from fenn.remote.credentials import (
     write_credentials,
 )
 from fenn.remote.exceptions import RemoteError
+from fenn.utils.logging import logger
 
 
 def execute(args: argparse.Namespace) -> None:
     sub = getattr(args, "auth_command", None)
     if sub is None:
-        print(
+        logger.info(
             f"{Fore.RED}Missing auth subcommand. Try: "
-            f"{Fore.LIGHTYELLOW_EX}fenn auth login{Style.RESET_ALL}",
-            file=sys.stderr,
+            f"{Fore.LIGHTYELLOW_EX}fenn auth login{Style.RESET_ALL}"
         )
         sys.exit(1)
 
@@ -37,9 +37,8 @@ def execute(args: argparse.Namespace) -> None:
     elif sub == "logout":
         _logout(args)
     else:
-        print(
+        logger.info(
             f"{Fore.RED}Unknown auth subcommand: {sub}{Style.RESET_ALL}",
-            file=sys.stderr,
         )
         sys.exit(1)
 
@@ -51,7 +50,7 @@ def _login(args: argparse.Namespace) -> None:
     if not api_key:
         existing = load_credentials(profile)
         if existing is not None:
-            print(
+            logger.info(
                 f"{Fore.GREEN}Already logged in (profile: {profile}, "
                 f"key: {mask_key(existing.api_key)}). "
                 f"Run {Fore.LIGHTYELLOW_EX}fenn auth logout{Fore.GREEN} first to switch keys.{Style.RESET_ALL}"
@@ -66,11 +65,11 @@ def _login(args: argparse.Namespace) -> None:
             api_key = sys.stdin.readline().strip()
 
     if not api_key:
-        print(f"{Fore.RED}No API key provided.{Style.RESET_ALL}", file=sys.stderr)
+        logger.info(f"{Fore.RED}No API key provided.{Style.RESET_ALL}")
         sys.exit(1)
 
     path = write_credentials(api_key, profile=profile)
-    print(
+    logger.info(
         f"{Fore.GREEN}Saved credentials to "
         f"{Fore.LIGHTYELLOW_EX}{path}{Fore.GREEN} (profile: {profile}).{Style.RESET_ALL}"
     )
@@ -80,18 +79,20 @@ def _status(args: argparse.Namespace) -> None:
     profile = args.profile or DEFAULT_PROFILE
     creds = load_credentials(profile)
     if creds is None:
-        print(
+        logger.info(
             f"{Fore.YELLOW}No saved credentials for profile {profile!r}. "
             f"Run {Fore.LIGHTYELLOW_EX}fenn auth login{Fore.YELLOW} to add one.{Style.RESET_ALL}"
         )
         sys.exit(1)
 
-    print(f"{Fore.CYAN}profile : {Fore.LIGHTYELLOW_EX}{creds.profile}{Style.RESET_ALL}")
-    print(
+    logger.info(
+        f"{Fore.CYAN}profile : {Fore.LIGHTYELLOW_EX}{creds.profile}{Style.RESET_ALL}"
+    )
+    logger.info(
         f"{Fore.CYAN}api_key : "
         f"{Fore.LIGHTYELLOW_EX}{mask_key(creds.api_key)}{Style.RESET_ALL}"
     )
-    print(
+    logger.info(
         f"{Fore.CYAN}host    : "
         f"{Fore.LIGHTYELLOW_EX}{DEFAULT_REMOTE_HOST}{Style.RESET_ALL}"
     )
@@ -103,31 +104,29 @@ def _status(args: argparse.Namespace) -> None:
             me = client.me()
         credits_remaining = me.get("credits")
         plan = me.get("plan")
-        print(
+        logger.info(
             f"{Fore.GREEN}credits : {Fore.LIGHTYELLOW_EX}{credits_remaining}"
             f"{Fore.GREEN}  plan: {plan}{Style.RESET_ALL}"
         )
     except requests.exceptions.SSLError:
-        print(
+        logger.info(
             f"{Fore.RED}SSL verification failed for {DEFAULT_REMOTE_HOST}. "
             f"Try: pip install --upgrade certifi{Style.RESET_ALL}",
-            file=sys.stderr,
         )
     except (RemoteError, requests.exceptions.ConnectionError) as exc:
-        print(
+        logger.info(
             f"{Fore.RED}Could not reach host: {exc}{Style.RESET_ALL}",
-            file=sys.stderr,
         )
 
 
 def _logout(args: argparse.Namespace) -> None:
     profile = args.profile or DEFAULT_PROFILE
     if delete_profile(profile):
-        print(
+        logger.info(
             f"{Fore.GREEN}Removed credentials for profile "
             f"{Fore.LIGHTYELLOW_EX}{profile}{Style.RESET_ALL}"
         )
     else:
-        print(
+        logger.info(
             f"{Fore.YELLOW}No credentials found for profile {profile!r}.{Style.RESET_ALL}"
         )

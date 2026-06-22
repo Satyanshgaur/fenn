@@ -1,7 +1,6 @@
 """Fenn Dashboard — Flask application for browsing fnxml log files."""
 
 import argparse
-import logging
 import secrets
 from datetime import timedelta
 from pathlib import Path
@@ -19,6 +18,8 @@ from flask import (
     url_for,
 )
 from flask_wtf.csrf import CSRFError, CSRFProtect
+
+from fenn.utils.logging import logger
 
 try:
     from fenn.dashboard import auth as dashboard_auth
@@ -338,9 +339,7 @@ def run(
     """Configure and start the dashboard server."""
     if log_dirs:
         scanner.add_dirs(log_dirs)
-    logging.getLogger("werkzeug").setLevel(logging.ERROR)
-    app.logger.setLevel(logging.ERROR)
-    print(f"Fenn dashboard started at http://{host}:{port}")
+    logger.info(f"Fenn dashboard started at http://{host}:{port}")
     from werkzeug.serving import make_server
 
     make_server(host, port, app).serve_forever()
