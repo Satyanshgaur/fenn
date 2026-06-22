@@ -7,7 +7,7 @@ from fenn.args import Parser
 from fenn.export.exporter import Exporter
 from fenn.secrets.keystore import KeyStore
 from fenn.utils import generate_session_id
-from fenn.utils.logging import logger
+from fenn.utils.logging import logger, original_print
 
 
 class Fenn:
@@ -87,7 +87,7 @@ class Fenn:
         """
 
         if not self._disable_disclaimer:
-            print(
+            original_print(
                 "***********************************************************************************\n"
                 f"{Style.BRIGHT}Hi, thank you for using the {Fore.GREEN}PyFenn{Style.RESET_ALL}{Style.BRIGHT} framework.{Style.RESET_ALL}\n"
                 f"PyFenn is still in {Fore.CYAN}early access{Style.RESET_ALL}.\n"
