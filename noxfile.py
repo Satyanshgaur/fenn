@@ -8,5 +8,5 @@ EDITABLE_INSTALL = ("uv", "sync", "--group", "test")
 
 @nox.session(tags=["fenn"])
 def unit(session: nox.Session) -> None:
-    session.install(*EDITABLE_INSTALL)
+    session.run_install(*EDITABLE_INSTALL)
     session.run("pytest", "tests/unit", "--cov", "--cov-branch", "--cov-report=xml")
